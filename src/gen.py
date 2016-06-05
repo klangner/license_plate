@@ -277,7 +277,7 @@ def generate_image(char_images, num_bg_images):
     bounding_box = bounding_box_from_mask(plate_mask)
     out = plate * plate_mask + bg * (1.0 - plate_mask)
     out = cv2.resize(out, (OUTPUT_SHAPE[1], OUTPUT_SHAPE[0]))
-    out += numpy.random.normal(scale=0.05, size=out.shape)
+    # out += numpy.random.normal(scale=0.05, size=out.shape)
     out = numpy.clip(out, 0., 1.)
     return out, code, bounding_box
 
