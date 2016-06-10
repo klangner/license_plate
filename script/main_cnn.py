@@ -18,9 +18,9 @@ LABEL_COUNT = 4
 def load_data(folder):
     df = pd.read_csv(folder + 'plates.csv')
     images = [helpers.load_image(folder + fname) for fname in df['image']]
-    X_train = np.array(images)
-    Y_train = df[['left', 'top', 'right', 'bottom']].as_matrix()
-    return X_train, Y_train
+    x_train = np.array(images)
+    y_train = df[['left', 'top', 'right', 'bottom']].as_matrix()
+    return x_train, y_train
 
 
 # Mean square error
@@ -64,13 +64,13 @@ def train(X_train, Y_train, X_test, Y_test, neural_net, epoch):
 
 
 def test(X_test, neural_net):
-    X2_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1]*X_test.shape[2]))
+    ids = [random.randint(0, X_test.shape[0]) for _ in range(9)]
+    X2_test = np.reshape(X_test[ids], (len(ids), X_test.shape[1]*X_test.shape[2]))
     model = neural_net.build()
     saver = tf.train.Saver()
     with tf.Session() as session:
         saver.restore(session, MODEL_PATH)
-        ids = [random.randint(0, X2_test.shape[0]) for _ in range(9)]
-        Y2_test = model.eval(feed_dict={neural_net.x_placeholder: X2_test[ids]})
+        Y2_test = model.eval(feed_dict={neural_net.x_placeholder: X2_test})
         helpers.plot_images(X_test[ids], (Y2_test+1) * (64, 32, 64, 32))
 
 
