@@ -36,9 +36,9 @@ from PIL import ImageFont
 
 
 # Where data will be stored
-DESTINATION = 'data/mearl'
+DESTINATION = '../data/artificial'
 # font localization
-FONT_PATH = "data/UKNumberPlate.ttf"
+FONT_PATH = "../data/UKNumberPlate.ttf"
 # Pixel size to which the chars are resized
 FONT_HEIGHT = 24
 # Output image size
@@ -224,7 +224,7 @@ def generate_background(num_bg_images):
     """
     found = False
     while not found:
-        fname = "data/backgrounds/{:08d}.jpg".format(random.randint(0, num_bg_images - 1))
+        fname = "../data/backgrounds/{:08d}.jpg".format(random.randint(0, num_bg_images - 1))
         bg = cv2.imread(fname, 0) / 255.
         found = bg.shape[1] >= OUTPUT_SHAPE[1] and bg.shape[0] >= OUTPUT_SHAPE[0]
 
@@ -294,7 +294,7 @@ def generate_ims(num_images):
 
     """
     char_images = dict(make_char_images(FONT_HEIGHT))
-    num_bg_images = len(os.listdir("data/backgrounds"))
+    num_bg_images = len(os.listdir("../data/backgrounds"))
     for _ in range(num_images):
         yield generate_image(char_images, num_bg_images)
 
@@ -302,7 +302,7 @@ def generate_ims(num_images):
 if __name__ == "__main__":
     shutil.rmtree(DESTINATION, ignore_errors=True)
     os.mkdir(DESTINATION)
-    train_file = open(DESTINATION + '/train.csv','w')
+    train_file = open(DESTINATION + '/plates.csv','w')
     train_file.write('image,plate,left,top,right,bottom\n')
     im_gen = generate_ims(int(sys.argv[1]))
     for img_idx, (im, c, (l, t, r, b)) in enumerate(im_gen):
