@@ -54,7 +54,8 @@ def train(X_train, Y_train, X_test, Y_test, neural_net, epoch):
                 if score_test < best_score:
                     best_score = score_test
                     saver.save(session, MODEL_PATH)
-                if dataset.epoch_completed() % 1 == 0:
+                    print('Epoch: %d, Score: %f saved' % (dataset.epoch_completed(), score_test))
+                else:
                     print('Epoch: %d, Score: %f' % (dataset.epoch_completed(), score_test))
 
     dt = (time.time()-start_time) / 60
