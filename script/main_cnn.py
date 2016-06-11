@@ -7,8 +7,7 @@ import pandas as pd
 import tensorflow as tf
 from klangner import helpers, artificial
 
-TRAIN_PATH = '../data/artificial-train/'
-TEST_PATH = '../data/artificial-test/'
+DATA_PATH = '../data/'
 MODEL_PATH = '../model/artificial'
 
 PIXEL_COUNT = 64 * 128
@@ -29,14 +28,14 @@ def mse(expected, predicted):
     return tf.reduce_mean(se)
 
 
-def train(X_train, Y_train, X_test, Y_test, neural_net, epoch):
-    X2_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1]*X_train.shape[2]))
-    Y2_train = Y_train / (64, 32, 64, 32) - 1
-    X2_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1]*X_test.shape[2]))
-    Y2_test = Y_test / (64, 32, 64, 32) - 1
+def train(x_train, y_train, x_test, y_test, neural_net, epoch):
+    x2_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1] * x_train.shape[2]))
+    y2_train = y_train / (64, 32, 64, 32) - 1
+    x2_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1] * x_test.shape[2]))
+    y2_test = y_test / (64, 32, 64, 32) - 1
     y_placeholder = tf.placeholder(tf.float32, shape=[None, LABEL_COUNT])
     loss = mse(y_placeholder, neural_net.build())
-    dataset = helpers.Dataset(X2_train, Y2_train)
+    dataset = helpers.Dataset(x2_train, y2_train)
     saver = tf.train.Saver()
     with tf.Session() as session:
         start_time = time.time()
@@ -50,33 +49,36 @@ def train(X_train, Y_train, X_test, Y_test, neural_net, epoch):
             train_step.run(feed_dict={neural_net.x_placeholder: batch_x, y_placeholder: batch_y})
             if dataset.epoch_completed() > last_epoch:
                 last_epoch = dataset.epoch_completed()
-                score_test = loss.eval(feed_dict={neural_net.x_placeholder: X2_test, y_placeholder: Y2_test})
+                score_test = loss.eval(feed_dict={neural_net.x_placeholder: x2_test, y_placeholder: y2_test})
                 if score_test < best_score:
                     best_score = score_test
                     saver.save(session, MODEL_PATH)
-                    print('Epoch: %d, Score: %f saved' % (dataset.epoch_completed(), score_test))
+                    score_train = loss.eval(feed_dict={neural_net.x_placeholder: x2_train[:1000],
+                                                       y_placeholder: y2_train[:1000]})
+                    print('Epoch=%d, Score=%f (train=%f) saved' % (dataset.epoch_completed(), score_test, score_train))
                 else:
-                    print('Epoch: %d, Score: %f' % (dataset.epoch_completed(), score_test))
+                    print('Epoch=%d, Score=%f' % (dataset.epoch_completed(), score_test))
 
     dt = (time.time()-start_time) / 60
     eph = 60 * dataset.epoch_completed() / dt
     print('Trained %d epoch in %f minutes. %f epoches per hour' % (dataset.epoch_completed(), dt, eph))
 
 
-def test(X_test, neural_net):
-    ids = [random.randint(0, X_test.shape[0]) for _ in range(9)]
-    X2_test = np.reshape(X_test[ids], (len(ids), X_test.shape[1]*X_test.shape[2]))
+def test(x_test, neural_net):
+    ids = [random.randint(0, x_test.shape[0]) for _ in range(9)]
+    x2_test = np.reshape(x_test[ids], (len(ids), x_test.shape[1]*x_test.shape[2]))
     model = neural_net.build()
     saver = tf.train.Saver()
     with tf.Session() as session:
         saver.restore(session, MODEL_PATH)
-        Y2_test = model.eval(feed_dict={neural_net.x_placeholder: X2_test})
-        helpers.plot_images(X_test[ids], (Y2_test+1) * (64, 32, 64, 32))
+        y2_test = model.eval(feed_dict={neural_net.x_placeholder: x2_test})
+        helpers.plot_images(x_test[ids], (y2_test+1) * (64, 32, 64, 32))
 
 
-def main(epoch=0):
-    x_train, y_train = load_data(TRAIN_PATH)
-    x_test, y_test = load_data(TEST_PATH)
+def main(epoch, train_path):
+    print('Train %d epochs on %s dataset' % (epoch, train_path))
+    x_train, y_train = load_data(DATA_PATH + train_path + '/')
+    x_test, y_test = load_data(DATA_PATH + 'artificial-test/')
     network = artificial.CNN()
     if epoch > 0:
         train(x_train, y_train, x_test, y_test, network, epoch)
@@ -86,8 +88,10 @@ def main(epoch=0):
 
 
 if __name__ == "__main__":
+    epoch_count = 0
+    train_dataset = 'artificial-train-1'
     if len(sys.argv) > 1:
         epoch_count = int(sys.argv[1])
-        main(epoch_count)
-    else:
-        main()
+    if len(sys.argv) > 2:
+        train_dataset = sys.argv[2]
+    main(epoch_count, train_dataset)
