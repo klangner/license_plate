@@ -75,13 +75,13 @@ def test(X_test, neural_net):
 
 
 def main(epoch=0):
-    X_train, Y_train = load_data(TRAIN_PATH)
-    X_test, Y_test = load_data(TEST_PATH)
+    x_train, y_train = load_data(TRAIN_PATH)
+    x_test, y_test = load_data(TEST_PATH)
     network = artificial.CNN()
     if epoch > 0:
-        train(X_train, Y_train, X_test, Y_test, network, epoch)
+        train(x_train, y_train, x_test, y_test, network, epoch)
     else:
-        test(X_test, network)
+        test(x_test, network)
     print('Done.')
 
 
