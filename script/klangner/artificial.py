@@ -4,7 +4,6 @@ PIXEL_COUNT = 64 * 128
 LABEL_COUNT = 4
 
 
-# TODO: Add to all tensors name
 # The best score for this model is: 0.024626
 class CNN:
 

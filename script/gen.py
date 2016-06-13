@@ -212,6 +212,11 @@ def generate_plate(font_height, char_ims):
 
     plate = (numpy.ones(out_shape) * plate_color * (1. - text_mask) +
              numpy.ones(out_shape) * text_color * text_mask)
+    # Add black frame around plate
+    plate[0, :] = 0
+    plate[plate.shape[0]-1, :] = 0
+    plate[:, 0] = 0
+    plate[:, plate.shape[1]-1] = 0
 
     return plate, rounded_rect(out_shape, radius), code.replace(" ", "")
 

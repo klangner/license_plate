@@ -42,7 +42,7 @@ def train(x_train, y_train, x_test, y_test, neural_net, epoch):
         best_score = 1
         session.run(tf.initialize_all_variables())
         saver.restore(session, MODEL_PATH)
-        train_step = tf.train.GradientDescentOptimizer(5e-5).minimize(loss)
+        train_step = tf.train.GradientDescentOptimizer(5e-4).minimize(loss)
         last_epoch = -1
         while dataset.epoch_completed() < epoch:
             (batch_x, batch_y) = dataset.next_batch(20)
@@ -50,14 +50,14 @@ def train(x_train, y_train, x_test, y_test, neural_net, epoch):
             if dataset.epoch_completed() > last_epoch:
                 last_epoch = dataset.epoch_completed()
                 score_test = loss.eval(feed_dict={neural_net.x_placeholder: x2_test, y_placeholder: y2_test})
+                score_train = loss.eval(feed_dict={neural_net.x_placeholder: x2_train[:1000],
+                                                   y_placeholder: y2_train[:1000]})
                 if score_test < best_score:
                     best_score = score_test
                     saver.save(session, MODEL_PATH)
-                    score_train = loss.eval(feed_dict={neural_net.x_placeholder: x2_train[:1000],
-                                                       y_placeholder: y2_train[:1000]})
                     print('Epoch=%d, Score=%f (train=%f) saved' % (dataset.epoch_completed(), score_test, score_train))
                 else:
-                    print('Epoch=%d, Score=%f' % (dataset.epoch_completed(), score_test))
+                    print('Epoch=%d, Score=%f (train=%f)' % (dataset.epoch_completed(), score_test, score_train))
 
     dt = (time.time()-start_time) / 60
     eph = 60 * dataset.epoch_completed() / dt
