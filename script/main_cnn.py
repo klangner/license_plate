@@ -12,6 +12,8 @@ MODEL_PATH = '../model/artificial'
 
 PIXEL_COUNT = 64 * 128
 LABEL_COUNT = 4
+TEST_SIZE = 500
+FORCE_CPU = False
 
 
 def load_data(folder):
@@ -24,15 +26,15 @@ def load_data(folder):
 
 # Mean square error
 def mse(expected, predicted):
-    se = tf.square(expected - predicted)
+    se = tf.square((expected - predicted))
     return tf.reduce_mean(se)
 
 
 def train(x_train, y_train, x_test, y_test, neural_net, epoch):
     x2_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1] * x_train.shape[2]))
     y2_train = y_train / (64, 32, 64, 32) - 1
-    x2_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1] * x_test.shape[2]))
-    y2_test = y_test / (64, 32, 64, 32) - 1
+    x2_test = np.reshape(x_test[:TEST_SIZE], (TEST_SIZE, x_test.shape[1] * x_test.shape[2]))
+    y2_test = y_test[:TEST_SIZE] / (64, 32, 64, 32) - 1
     y_placeholder = tf.placeholder(tf.float32, shape=[None, LABEL_COUNT])
     loss = mse(y_placeholder, neural_net.build())
     dataset = helpers.Dataset(x2_train, y2_train)
@@ -50,8 +52,8 @@ def train(x_train, y_train, x_test, y_test, neural_net, epoch):
             if dataset.epoch_completed() > last_epoch:
                 last_epoch = dataset.epoch_completed()
                 score_test = loss.eval(feed_dict={neural_net.x_placeholder: x2_test, y_placeholder: y2_test})
-                score_train = loss.eval(feed_dict={neural_net.x_placeholder: x2_train[:1000],
-                                                   y_placeholder: y2_train[:1000]})
+                score_train = loss.eval(feed_dict={neural_net.x_placeholder: x2_train[:TEST_SIZE],
+                                                   y_placeholder: y2_train[:TEST_SIZE]})
                 if score_test < best_score:
                     best_score = score_test
                     saver.save(session, MODEL_PATH)
@@ -76,13 +78,14 @@ def test(x_test, neural_net):
 
 
 def main(epoch, train_path):
-    print('Train %d epochs on %s dataset' % (epoch, train_path))
     x_train, y_train = load_data(DATA_PATH + train_path + '/')
     x_test, y_test = load_data(DATA_PATH + 'artificial-test/')
     network = artificial.CNN()
     if epoch > 0:
+        print('Train %d epochs on %s dataset' % (epoch, train_path))
         train(x_train, y_train, x_test, y_test, network, epoch)
     else:
+        print('Run test')
         test(x_test, network)
     print('Done.')
 
