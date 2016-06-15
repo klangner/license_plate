@@ -36,7 +36,7 @@ from PIL import ImageFont
 
 
 # Where data will be stored
-DESTINATION = '../data/artificial'
+DESTINATION = '../data/artificial/train'
 # font localization
 FONT_PATH = "../data/UKNumberPlate.ttf"
 # Pixel size to which the chars are resized

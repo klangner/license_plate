@@ -7,7 +7,7 @@ import pandas as pd
 import tensorflow as tf
 from klangner import helpers, artificial
 
-DATA_PATH = '../data/'
+DATA_PATH = '../data/artificial/'
 MODEL_PATH = '../model/artificial'
 
 PIXEL_COUNT = 64 * 128
@@ -92,7 +92,7 @@ def main(epoch, train_path):
 
 if __name__ == "__main__":
     epoch_count = 0
-    train_dataset = 'artificial-train-1'
+    train_dataset = 'train-1'
     if len(sys.argv) > 1:
         epoch_count = int(sys.argv[1])
     if len(sys.argv) > 2:
