@@ -1,10 +1,12 @@
+import random
+import sys
 import time
 
-import sys
-import random
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+from tensorflow_serving.session_bundle import exporter
+
 from klangner import helpers, artificial
 
 DATA_PATH = '../data/artificial/'
@@ -88,6 +90,16 @@ def main(epoch, train_path):
         print('Run test')
         test(x_test, network)
     print('Done.')
+
+def export_model(sess, x, y):
+    print('Exporting trained model to %s' % DATA_PATH)
+    saver = tf.train.Saver(sharded=True)
+    model_exporter = exporter.Exporter(saver)
+    signature = exporter.classification_signature(input_tensor=x, scores_tensor=y)
+    model_exporter.init(sess.graph.as_graph_def(),
+                        default_graph_signature=signature)
+    model_exporter.export(DATA_PATH, tf.constant(FLAGS.export_version), sess)
+    print 'Done exporting!'
 
 
 if __name__ == "__main__":
